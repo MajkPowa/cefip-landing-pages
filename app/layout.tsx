@@ -3,6 +3,7 @@ import './globals.css';
 import { AnalyticsConsent } from './components/analytics';
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://cefip-rekonstrukce-vykup.majkpowa.chatgpt.site'),
   title: {
     default: 'CEFIP — řešení pro vaši nemovitost',
     template: '%s',
