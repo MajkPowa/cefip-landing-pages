@@ -22,6 +22,8 @@
 
 # debug
 npm-debug.log*
+firebase-debug.log*
+.firebase/
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*

@@ -1,0 +1,10 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Fotografie k leadům nejsou veřejné a ukládá je pouze Admin SDK backendu.
+    match /{path=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,10 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Leady obsahují osobní údaje. Přístup má pouze důvěryhodný backend přes IAM.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

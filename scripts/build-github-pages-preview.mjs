@@ -44,6 +44,7 @@ function prepareHtml(source) {
   html = html.replaceAll('href="/og.png"', `href="${basePath}/og.png"`);
   html = html.replaceAll('content="http://localhost:3001/og.png"', `content="https://majkpowa.github.io${basePath}/og.png"`);
   html = html.replaceAll('content="https://cefip-rekonstrukce-vykup.majkpowa.chatgpt.site/og.png"', `content="https://majkpowa.github.io${basePath}/og.png"`);
+  html = html.replaceAll('content="https://cefip-landing-pages-2026.web.app/og.png"', `content="https://majkpowa.github.io${basePath}/og.png"`);
 
   html = html.replace('<head>', `<head><meta name="robots" content="noindex,nofollow"><style>
     .github-preview-ribbon{position:relative;z-index:10000;background:#7f84ff;color:#080829;padding:10px 18px;text-align:center;font:600 14px/1.35 Arial,sans-serif}

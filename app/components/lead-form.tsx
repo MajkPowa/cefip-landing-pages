@@ -124,8 +124,8 @@ export function LeadForm({ serviceType, title, intro, primaryCta, landingVariant
     const selected = Array.from(event.target.files ?? []);
     const accepted = selected.filter((file) => ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'].includes(file.type));
     const totalBytes = accepted.reduce((sum, file) => sum + file.size, 0);
-    if (accepted.some((file) => file.size > 8 * 1024 * 1024) || totalBytes > 25 * 1024 * 1024 || accepted.length > 5) {
-      setErrors((current) => ({ ...current, photos: 'Nahrajte nejvýše 5 fotografií, každou do 8 MB a celkem do 25 MB.' }));
+    if (accepted.some((file) => file.size > 8 * 1024 * 1024) || totalBytes > 22 * 1024 * 1024 || accepted.length > 5) {
+      setErrors((current) => ({ ...current, photos: 'Nahrajte nejvýše 5 fotografií, každou do 8 MB a celkem do 22 MB.' }));
       setPhotos([]);
       return;
     }
