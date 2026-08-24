@@ -4,6 +4,7 @@ import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore, Timestamp } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 import { logger } from "firebase-functions";
+import { defineSecret } from "firebase-functions/params";
 import { onRequest, type Request } from "firebase-functions/v2/https";
 import type { Response } from "express";
 import {
@@ -20,6 +21,9 @@ import {
 const MAX_BODY_BYTES = 24 * 1024 * 1024;
 const MAX_FIELDS = 40;
 const MAX_FIELD_BYTES = 4096;
+const META_DATASET_ID = "1511661883235296";
+const META_GRAPH_VERSION = "v23.0";
+const metaCapiAccessToken = defineSecret("META_CAPI_ACCESS_TOKEN");
 
 const firebaseApp = getApps()[0] ?? initializeApp();
 const firestore = getFirestore(firebaseApp);
@@ -268,6 +272,8 @@ async function createLead(lead: NormalizedLead): Promise<SavedLead> {
       placement: lead.placement,
       landingPath: lead.landingPath,
       referrerOrigin: lead.referrerOrigin,
+      marketingMeasurementConsent: lead.marketingConsent,
+      marketingMeasurementConsentVersion: "cefip-marketing-consent-v1",
       privacyAcknowledged: true,
       privacyVersion: lead.privacyVersion,
       status: "new",
@@ -275,6 +281,83 @@ async function createLead(lead: NormalizedLead): Promise<SavedLead> {
 
     return { id: candidateLeadId, eventId: candidateEventId, duplicate: false };
   });
+}
+
+function firstForwardedIp(request: Request): string | null {
+  const forwarded = request.get("x-forwarded-for")?.split(",")[0]?.trim();
+  return forwarded || request.ip || null;
+}
+
+function eventSourceUrl(origin: string | null, landingPath: string): string | null {
+  if (!origin || origin === "invalid") return null;
+  try {
+    return new URL(landingPath, `${origin}/`).toString();
+  } catch {
+    return null;
+  }
+}
+
+async function sendMetaLeadEvent(
+  request: Request,
+  origin: string | null,
+  lead: NormalizedLead,
+  eventId: string,
+): Promise<void> {
+  if (!lead.marketingConsent) return;
+
+  const accessToken = metaCapiAccessToken.value().trim();
+  if (!accessToken) {
+    logger.warn("meta_capi_secret_missing");
+    return;
+  }
+
+  const userData: Record<string, string> = {};
+  const clientIp = firstForwardedIp(request);
+  const userAgent = request.get("user-agent")?.trim();
+  if (clientIp) userData.client_ip_address = clientIp;
+  if (userAgent) userData.client_user_agent = userAgent;
+  if (lead.metaFbp) userData.fbp = lead.metaFbp;
+  if (lead.metaFbc) userData.fbc = lead.metaFbc;
+  if (Object.keys(userData).length === 0) return;
+
+  try {
+    const response = await fetch(
+      `https://graph.facebook.com/${META_GRAPH_VERSION}/${META_DATASET_ID}/events`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          data: [{
+            event_name: "Lead",
+            event_time: Math.floor(Date.now() / 1000),
+            event_id: eventId,
+            action_source: "website",
+            event_source_url: eventSourceUrl(origin, lead.landingPath),
+            user_data: userData,
+            custom_data: {
+              content_name: lead.serviceType === "reconstruction"
+                ? "cefip_reconstruction"
+                : "cefip_property_buyout",
+              content_category: lead.serviceType,
+              landing_variant: lead.landingVariant,
+            },
+          }],
+        }),
+        signal: AbortSignal.timeout(5000),
+      },
+    );
+
+    if (!response.ok) {
+      logger.warn("meta_capi_delivery_failed", { status: response.status, eventId });
+      return;
+    }
+    logger.info("meta_capi_lead_sent", { eventId });
+  } catch (error) {
+    logger.warn("meta_capi_delivery_failed", { code: errorCode(error), eventId });
+  }
 }
 
 function errorCode(error: unknown): string {
@@ -346,6 +429,7 @@ export const submitLead = onRequest(
     timeoutSeconds: 60,
     invoker: "public",
     cors: false,
+    secrets: [metaCapiAccessToken],
   },
   async (request, response) => {
     const origin = requestOrigin(request);
@@ -395,9 +479,12 @@ export const submitLead = onRequest(
       }
 
       const saved = await createLead(validation.value);
-      const uploaded = saved.duplicate
-        ? 0
-        : await uploadPhotos(validation.value.submissionId, saved.id, photos);
+      const [uploaded] = saved.duplicate
+        ? [0]
+        : await Promise.all([
+          uploadPhotos(validation.value.submissionId, saved.id, photos),
+          sendMetaLeadEvent(request, origin, validation.value, saved.eventId),
+        ]);
 
       sendJson(response, 201, {
         ok: true,

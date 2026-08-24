@@ -46,6 +46,9 @@ export type NormalizedLead = {
   placement: string | null;
   landingPath: string;
   referrerOrigin: string | null;
+  marketingConsent: boolean;
+  metaFbp: string | null;
+  metaFbc: string | null;
   privacyVersion: string;
 };
 
@@ -86,6 +89,11 @@ export function normalizePhone(input: string): string {
 
 function selected(value: string | null, allowed: ReadonlySet<string>): string | null {
   return value && allowed.has(value) ? value : null;
+}
+
+function metaCookie(fields: Record<string, string>, key: string): string | null {
+  const value = optional(fields, key, 300);
+  return value && /^fb\.\d\.\d{8,}\.[A-Za-z0-9_-]{5,256}$/.test(value) ? value : null;
 }
 
 export function validateLead(fields: Record<string, string>): ValidationResult {
@@ -174,6 +182,9 @@ export function validateLead(fields: Record<string, string>): ValidationResult {
       placement: optional(fields, "placement", 64),
       landingPath,
       referrerOrigin: optional(fields, "referrerOrigin", 180),
+      marketingConsent: clipped(fields, "marketingConsent", 8) === "true",
+      metaFbp: metaCookie(fields, "metaFbp"),
+      metaFbc: metaCookie(fields, "metaFbc"),
       privacyVersion: "1.0-2026-08-24",
     },
   };

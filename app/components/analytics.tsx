@@ -22,6 +22,10 @@ const STANDARD_EVENTS = new Set(['PageView', 'ViewContent', 'Lead', 'Contact']);
 // Firebase's static export cannot silently ship without campaign measurement.
 const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID?.trim() || '1511661883235296';
 
+export function hasMetaMarketingConsent() {
+  return typeof window !== 'undefined' && window.localStorage.getItem(CONSENT_KEY) === 'accepted';
+}
+
 export function trackMeta(event: string, parameters: Record<string, unknown> = {}, eventId?: string) {
   if (typeof window === 'undefined' || !window.fbq) return;
   const method = STANDARD_EVENTS.has(event) ? 'track' : 'trackCustom';
@@ -85,7 +89,7 @@ export function AnalyticsConsent() {
       <div>
         <strong>Soukromí máte pod kontrolou</strong>
         <p>
-          Nezbytné technologie používáme pro fungování stránky. Meta Pixel načteme pouze po vašem souhlasu.
+          Nezbytné technologie používáme pro fungování stránky. Měření Meta aktivujeme pouze po vašem souhlasu.
         </p>
       </div>
       <div className="cookie-actions">

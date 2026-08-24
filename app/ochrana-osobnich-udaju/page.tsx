@@ -34,7 +34,7 @@ export default function PrivacyPage() {
         <p>Údaje mohou zpracovávat pověření pracovníci CEFIP a poskytovatelé technické infrastruktury v rozsahu nutném pro provoz formuláře. Kontaktní údaje, fotografie ani popis nemovitosti neposíláme do Meta Pixelu.</p>
 
         <h2>Marketingové technologie</h2>
-        <p>Meta Pixel se načte pouze po aktivním souhlasu v cookie liště. Odmítnutí marketingových cookies nebrání odeslání poptávky. Souhlas lze později odvolat vymazáním uloženého nastavení webu v prohlížeči.</p>
+        <p>Meta Pixel a navazující serverové měření Meta Conversions API aktivujeme pouze po aktivním souhlasu v cookie liště. Pro měření odesíláme typ a čas události, identifikátor pro deduplikaci, navštívenou stránku, technické údaje prohlížeče a s reklamou související identifikátory Meta. Do Meta neposíláme jméno, telefon, e-mail, fotografie ani popis nemovitosti. Odmítnutí marketingových cookies nebrání odeslání poptávky. Souhlas lze později odvolat vymazáním uloženého nastavení webu v prohlížeči.</p>
 
         <h2>Vaše práva</h2>
         <p>Můžete požádat o přístup k údajům, opravu, výmaz, omezení zpracování nebo vznést námitku, pokud jsou splněny zákonné podmínky. Kontaktujte <a href="mailto:info@cefip.cz">info@cefip.cz</a>. Máte také právo podat stížnost u Úřadu pro ochranu osobních údajů.</p>

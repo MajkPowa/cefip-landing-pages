@@ -1,7 +1,7 @@
 'use client';
 
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
-import { trackMeta } from './analytics';
+import { hasMetaMarketingConsent, trackMeta } from './analytics';
 import type { ServiceType } from '../lib/landing-content';
 
 type LeadFormProps = {
@@ -47,6 +47,12 @@ const initialValues: FormValues = {
 };
 
 const inputClass = 'form-control';
+
+function readCookie(name: string) {
+  const prefix = `${encodeURIComponent(name)}=`;
+  const match = document.cookie.split('; ').find((part) => part.startsWith(prefix));
+  return match ? decodeURIComponent(match.slice(prefix.length)).slice(0, 300) : '';
+}
 
 export function LeadForm({ serviceType, title, intro, primaryCta, landingVariant }: LeadFormProps) {
   const [step, setStep] = useState(0);
@@ -152,6 +158,12 @@ export function LeadForm({ serviceType, title, intro, primaryCta, landingVariant
     for (const [key, value] of Object.entries(values)) payload.set(key, String(value));
     for (const [key, value] of Object.entries(attribution.current)) payload.set(key, value);
     payload.set('landingPath', window.location.pathname);
+    const marketingConsent = hasMetaMarketingConsent();
+    payload.set('marketingConsent', String(marketingConsent));
+    if (marketingConsent) {
+      payload.set('metaFbp', readCookie('_fbp'));
+      payload.set('metaFbc', readCookie('_fbc'));
+    }
     payload.set('referrerOrigin', (() => {
       try { return document.referrer ? new URL(document.referrer).origin : ''; } catch { return ''; }
     })());

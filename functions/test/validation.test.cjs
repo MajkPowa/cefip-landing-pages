@@ -20,7 +20,15 @@ test("normalizes Czech phone numbers", () => {
 });
 
 test("accepts a complete reconstruction lead and preserves attribution", () => {
-  const result = validateLead({ ...base, utm_source: "meta", ad_id: "ad-123", landingVariant: "r3" });
+  const result = validateLead({
+    ...base,
+    utm_source: "meta",
+    ad_id: "ad-123",
+    landingVariant: "r3",
+    marketingConsent: "true",
+    metaFbp: "fb.1.1724500000000.1234567890",
+    metaFbc: "fb.1.1724500000000.IwAR-test-click-id",
+  });
   assert.equal(result.ok, true);
   if (result.ok) {
     assert.equal(result.value.serviceType, "reconstruction");
@@ -28,6 +36,23 @@ test("accepts a complete reconstruction lead and preserves attribution", () => {
     assert.equal(result.value.utmSource, "meta");
     assert.equal(result.value.adId, "ad-123");
     assert.equal(result.value.landingVariant, "r3");
+    assert.equal(result.value.marketingConsent, true);
+    assert.equal(result.value.metaFbp, "fb.1.1724500000000.1234567890");
+    assert.equal(result.value.metaFbc, "fb.1.1724500000000.IwAR-test-click-id");
+  }
+});
+
+test("does not trust malformed Meta measurement identifiers", () => {
+  const result = validateLead({
+    ...base,
+    marketingConsent: "true",
+    metaFbp: "not-a-meta-cookie",
+    metaFbc: "invalid",
+  });
+  assert.equal(result.ok, true);
+  if (result.ok) {
+    assert.equal(result.value.metaFbp, null);
+    assert.equal(result.value.metaFbc, null);
   }
 });
 
