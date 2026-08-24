@@ -11,6 +11,7 @@ import {
   loadAndValidatePlan,
   main,
   parseArgs,
+  REQUIRED_META_PERMISSIONS,
   validatePlan,
 } from "../deploy-meta-ads.mjs";
 
@@ -99,6 +100,18 @@ test("execute requires a non-CLI token source", async () => {
   );
   assert.throws(() => parseArgs(["--token-stdin"]), /pouze společně s --execute/);
   assert.throws(() => parseArgs(["--access-token", "secret"]), /Neznámý parametr/);
+});
+
+test("Marketing API preflight uses ad/page scopes and not Instagram Graph scope", () => {
+  assert.deepEqual(REQUIRED_META_PERMISSIONS, [
+    "ads_management",
+    "ads_read",
+    "business_management",
+    "pages_show_list",
+    "pages_read_engagement",
+    "pages_manage_ads",
+  ]);
+  assert.equal(REQUIRED_META_PERMISSIONS.includes("instagram_basic"), false);
 });
 
 test("validation rejects any attempt to activate an entity", async () => {

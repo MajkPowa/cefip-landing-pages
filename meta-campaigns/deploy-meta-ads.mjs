@@ -16,6 +16,18 @@ const EXPECTED_ADS = 12;
 const PAUSED = "PAUSED";
 const GRAPH_ORIGIN = "https://graph.facebook.com";
 
+// Marketing API permissions used by this deployer. Instagram actors are checked
+// through AdAccount.getInstagramAccounts() (/act_<id>/instagram_accounts), so the
+// separate Instagram Graph API `instagram_basic` permission is not required.
+export const REQUIRED_META_PERMISSIONS = Object.freeze([
+  "ads_management",
+  "ads_read",
+  "business_management",
+  "pages_show_list",
+  "pages_read_engagement",
+  "pages_manage_ads",
+]);
+
 export function parseArgs(argv) {
   const options = {
     execute: false,
@@ -445,8 +457,7 @@ async function preflight(client, plan) {
   const accountId = `act_${plan.meta.adAccountId}`;
   const permissions = await client.get("me/permissions", {});
   const granted = new Set((permissions?.data ?? []).filter((row) => row.status === "granted").map((row) => row.permission));
-  const requiredPermissions = ["ads_management", "ads_read", "business_management", "pages_show_list", "pages_read_engagement", "pages_manage_ads", "instagram_basic"];
-  const missingPermissions = requiredPermissions.filter((permission) => !granted.has(permission));
+  const missingPermissions = REQUIRED_META_PERMISSIONS.filter((permission) => !granted.has(permission));
   if (missingPermissions.length) {
     throw new Error(`Token nemá všechna oprávnění potřebná pro bezpečný preflight a tvorbu reklam: ${missingPermissions.join(", ")}.`);
   }
@@ -465,12 +476,17 @@ async function preflight(client, plan) {
     throw new Error(`Dataset/pixel ${plan.meta.datasetId} není dostupný z reklamního účtu.`);
   }
 
+  const instagramAccounts = await client.listAll(`${accountId}/instagram_accounts`, { fields: "id,username" });
+  const availableInstagramIds = new Set(instagramAccounts.map((instagram) => String(instagram.id)));
+  const expectedInstagramIds = [...new Set(plan.campaigns.map((campaign) => campaign.instagramActorId))];
+  const missingInstagramIds = expectedInstagramIds.filter((instagramId) => !availableInstagramIds.has(instagramId));
+  if (missingInstagramIds.length) {
+    throw new Error(`Reklamní účet nemá přes /instagram_accounts dostupné očekávané Instagram actory: ${missingInstagramIds.join(", ")}. Dokončete jejich propojení a přiřazení k reklamnímu účtu.`);
+  }
+
   for (const campaign of plan.campaigns) {
-    const page = await client.get(campaign.pageId, { fields: "id,name,instagram_business_account{id,username}" });
+    const page = await client.get(campaign.pageId, { fields: "id,name" });
     if (String(page.id) !== campaign.pageId) throw new Error(`Facebook stránka ${campaign.pageId} není dostupná.`);
-    if (String(page.instagram_business_account?.id ?? "") !== campaign.instagramActorId) {
-      throw new Error(`Facebook stránka ${campaign.pageId} není propojena s očekávaným Instagram účtem ${campaign.instagramActorId}. Propojení nebo oprávnění instagram_basic je nutné dokončit před jakoukoli mutací.`);
-    }
   }
 
   const resolvedCities = await resolveGeoLocations(client, plan.defaults.geoCities);

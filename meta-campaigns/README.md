@@ -33,12 +33,11 @@ Preflight kontroluje přes `/me/permissions` tato udělená oprávnění:
 
 - `ads_management` a `ads_read`;
 - `business_management`;
-- `pages_show_list`, `pages_read_engagement` a `pages_manage_ads`;
-- `instagram_basic`.
+- `pages_show_list`, `pages_read_engagement` a `pages_manage_ads`.
 
 Uživatel nebo system user musí mít odpovídající přístup k business portfoliu `1754407605947820`, účtu `2596685627375368`, oběma stránkám, jejich Instagram účtům a datasetu. Aplikace může pro ostrý/system-user token potřebovat Advanced Access a ověření firmy. `leads_retrieval` není pro tvorbu těchto webových reklam potřeba a skript ho nepoužívá.
 
-Preflight navíc ověří účet, měnu CZK, business portfolio, dostupnost datasetu a přes mapování `Facebook Page → instagram_business_account` oba Instagram účty. Pokud například `instagram_basic` nebo propojení účtu chybí, skript skončí ještě před vytvořením kampaně.
+Preflight navíc ověří účet, měnu CZK, business portfolio, dostupnost datasetu a oba Instagram actory přes oficiální Marketing API edge reklamního účtu `act_<id>/instagram_accounts` (v Business SDK `AdAccount.getInstagramAccounts()`). Samostatné oprávnění Instagram Graph API `instagram_basic` proto není potřeba. Pokud Instagram účet není propojený a přiřazený k reklamnímu účtu, skript skončí ještě před vytvořením kampaně.
 
 ## Výslovné vytvoření PAUSED draftů
 
@@ -82,4 +81,3 @@ Set-Clipboard -Value $null
 ## Známé účtové blokátory před publikací
 
 V Business/Ads Manageru mohou být stále nutné platební metoda, ověření telefonu, potvrzení Facebook stránky, dokončené přihlášení/propojení Instagramů a ověřená vlastní doména. Skript některé z nich může odhalit jako API chybu, ale záměrně je neopravuje a nikdy reklamy neaktivuje.
-
