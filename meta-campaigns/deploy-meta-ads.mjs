@@ -28,6 +28,8 @@ export const REQUIRED_META_PERMISSIONS = Object.freeze([
   "pages_manage_ads",
 ]);
 
+export const PAGE_ACCESS_FIELDS = "id,name,tasks,instagram_business_account{id},connected_instagram_account{id}";
+
 export function parseArgs(argv) {
   const options = {
     execute: false,
@@ -549,12 +551,9 @@ async function preflight(client, plan) {
   }
 
   const instagramAccounts = await client.listAll(`${accountId}/instagram_accounts`, { fields: "id,username" });
-  const pages = [];
-  for (const campaign of plan.campaigns) {
-    pages.push(await client.get(campaign.pageId, {
-      fields: "id,name,tasks,instagram_business_account{id},connected_instagram_account{id}",
-    }));
-  }
+  // Page access tasks belong to the /me/accounts edge for a User token. Asking
+  // for `tasks` on /{page-id} returns OAuthException code 100 in this context.
+  const pages = await client.listAll("me/accounts", { fields: PAGE_ACCESS_FIELDS });
   const identity = validatePageBackedIdentityPreflight({ campaigns: plan.campaigns, instagramAccounts, pages });
 
   const resolvedCities = await resolveGeoLocations(client, plan.defaults.geoCities);

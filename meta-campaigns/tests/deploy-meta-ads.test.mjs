@@ -10,6 +10,7 @@ import {
   buildVideoCreativePayload,
   loadAndValidatePlan,
   main,
+  PAGE_ACCESS_FIELDS,
   parseArgs,
   REQUIRED_META_PERMISSIONS,
   resolveBusinessAdAccountRelationship,
@@ -118,6 +119,7 @@ test("Marketing API preflight uses ad/page scopes and not Instagram Graph scope"
     "pages_manage_ads",
   ]);
   assert.equal(REQUIRED_META_PERMISSIONS.includes("instagram_basic"), false);
+  assert.equal(PAGE_ACCESS_FIELDS, "id,name,tasks,instagram_business_account{id},connected_instagram_account{id}");
 });
 
 test("business relationship accepts ownership and partner/client access, but not an unrelated account", () => {
