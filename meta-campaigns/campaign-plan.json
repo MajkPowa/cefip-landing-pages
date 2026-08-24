@@ -6,7 +6,12 @@
     "businessId": "1754407605947820",
     "adAccountId": "2596685627375368",
     "datasetId": "1511661883235296",
+    "graphVersion": "v25.0",
     "officialAdsMcpUrl": "https://mcp.facebook.com/ads"
+  },
+  "assetRoots": {
+    "static": "../CEFIP_Meta_Static_Creatives_2026/final",
+    "video": "../CEFIP_Omni_Complete_Videos_2026/final"
   },
   "defaults": {
     "buyingType": "AUCTION",
@@ -40,12 +45,83 @@
       "instagramActorId": "17841480121342909",
       "landingUrl": "https://cefip-landing-pages-2026.web.app/rekonstrukce/",
       "ads": [
-        { "name": "R1 | TRANSFORMACE | STATIC", "variant": "r1", "status": "PAUSED" },
-        { "name": "R2 | PLAN | STATIC", "variant": "r2", "status": "PAUSED" },
-        { "name": "R3 | TYP-NEMOVITOSTI | STATIC", "variant": "r3", "status": "PAUSED" },
-        { "name": "R4 | JEDEN-PARTNER | STATIC", "variant": "r4", "status": "PAUSED" },
-        { "name": "R5 | LOW-FRICTION | STATIC", "variant": "r5", "status": "PAUSED" },
-        { "name": "RV1 | KOMPLETNI-REKONSTRUKCE | VIDEO-27S", "variant": "default", "status": "PAUSED" }
+        {
+          "name": "R1 | TRANSFORMACE | STATIC",
+          "variant": "r1",
+          "status": "PAUSED",
+          "creative": {
+            "type": "STATIC",
+            "primaryText": "Plánujete rekonstrukci bytu, domu nebo bytového domu? Pošlete nám základní informace a společně probereme vhodný postup.",
+            "headline": "Poptat rekonstrukci",
+            "cta": "LEARN_MORE",
+            "feedAsset": "reconstruction/4x5/r1-transformace-pred-po-4x5.png",
+            "verticalAsset": "reconstruction/9x16/r1-transformace-pred-po-9x16.png"
+          }
+        },
+        {
+          "name": "R2 | PLAN | STATIC",
+          "variant": "r2",
+          "status": "PAUSED",
+          "creative": {
+            "type": "STATIC",
+            "primaryText": "Dobrý výsledek začíná správně nastaveným rozsahem. Probereme stav nemovitosti, návaznosti prací i další postup.",
+            "headline": "Probrat rozsah projektu",
+            "cta": "LEARN_MORE",
+            "feedAsset": "reconstruction/4x5/r2-nejdriv-plan-4x5.png",
+            "verticalAsset": "reconstruction/9x16/r2-nejdriv-plan-9x16.png"
+          }
+        },
+        {
+          "name": "R3 | TYP-NEMOVITOSTI | STATIC",
+          "variant": "r3",
+          "status": "PAUSED",
+          "creative": {
+            "type": "STATIC",
+            "primaryText": "Rozsah rekonstrukce se liší podle typu i stavu nemovitosti. Napište nám, co chcete změnit, a probereme možnosti realizace.",
+            "headline": "Rekonstrukce nemovitosti",
+            "cta": "LEARN_MORE",
+            "feedAsset": "reconstruction/4x5/r3-byt-dum-bytovy-dum-4x5.png",
+            "verticalAsset": "reconstruction/9x16/r3-byt-dum-bytovy-dum-9x16.png"
+          }
+        },
+        {
+          "name": "R4 | JEDEN-PARTNER | STATIC",
+          "variant": "r4",
+          "status": "PAUSED",
+          "creative": {
+            "type": "STATIC",
+            "primaryText": "Méně předávání mezi jednotlivými etapami, jasnější návaznosti a jeden koordinovaný postup. Začněte konzultací projektu.",
+            "headline": "Jeden partner pro projekt",
+            "cta": "CONTACT_US",
+            "feedAsset": "reconstruction/4x5/r4-jeden-partner-4x5.png",
+            "verticalAsset": "reconstruction/9x16/r4-jeden-partner-9x16.png"
+          }
+        },
+        {
+          "name": "R5 | LOW-FRICTION | STATIC",
+          "variant": "r5",
+          "status": "PAUSED",
+          "creative": {
+            "type": "STATIC",
+            "primaryText": "Pro první konzultaci stačí popsat lokalitu, přiložit fotografie současného stavu a uvést zamýšlený rozsah. Ozveme se s dalším postupem.",
+            "headline": "Začněte konzultací",
+            "cta": "CONTACT_US",
+            "feedAsset": "reconstruction/4x5/r5-poslete-lokalitu-fotky-rozsah-4x5.png",
+            "verticalAsset": "reconstruction/9x16/r5-poslete-lokalitu-fotky-rozsah-9x16.png"
+          }
+        },
+        {
+          "name": "RV1 | KOMPLETNI-REKONSTRUKCE | VIDEO-27S",
+          "variant": "default",
+          "status": "PAUSED",
+          "creative": {
+            "type": "VIDEO",
+            "primaryText": "Byt, rodinný dům nebo bytový dům. Rekonstrukce začíná jasným plánem a koordinací jednotlivých etap. Pošlete základní údaje a probereme vhodný postup.",
+            "headline": "Poptat rekonstrukci",
+            "cta": "LEARN_MORE",
+            "videoAsset": "CEFIP-kompletni-rekonstrukce-27s-1080x1920.mp4"
+          }
+        }
       ]
     },
     {
@@ -56,12 +132,85 @@
       "instagramActorId": "17841480162050971",
       "landingUrl": "https://cefip-landing-pages-2026.web.app/vykup-nemovitosti/",
       "ads": [
-        { "name": "V1 | OKAMZITY-VYKUP | STATIC | CLAIM-GATE", "variant": "v1", "status": "PAUSED", "requiresClaimApproval": true },
-        { "name": "V2 | FAKTA | STATIC", "variant": "v2", "status": "PAUSED" },
-        { "name": "V3 | TRI-KROKY | STATIC", "variant": "v3", "status": "PAUSED" },
-        { "name": "V4 | POROVNANI-CEST | STATIC", "variant": "v4", "status": "PAUSED" },
-        { "name": "V5 | PRED-REKONSTRUKCI | STATIC", "variant": "v5", "status": "PAUSED" },
-        { "name": "VV1 | OKAMZITY-VYKUP | VIDEO-27S | CLAIM-GATE", "variant": "v1", "status": "PAUSED", "requiresClaimApproval": true }
+        {
+          "name": "V1 | OKAMZITY-VYKUP | STATIC | CLAIM-GATE",
+          "variant": "v1",
+          "status": "PAUSED",
+          "requiresClaimApproval": true,
+          "creative": {
+            "type": "STATIC",
+            "primaryText": "Zvažujete přímý výkup nemovitosti? Pošlete nám základní informace o lokalitě a stavu. Každý případ posuzujeme individuálně.",
+            "headline": "Požádat o posouzení",
+            "cta": "LEARN_MORE",
+            "feedAsset": "buyout/4x5/v1-okamzity-vykup-za-hotove-4x5.png",
+            "verticalAsset": "buyout/9x16/v1-okamzity-vykup-za-hotove-9x16.png"
+          }
+        },
+        {
+          "name": "V2 | FAKTA | STATIC",
+          "variant": "v2",
+          "status": "PAUSED",
+          "creative": {
+            "type": "STATIC",
+            "primaryText": "Pro první posouzení jsou důležité základní informace o nemovitosti, její lokalitě, stavu a dostupných podkladech.",
+            "headline": "Zjistit možnosti výkupu",
+            "cta": "LEARN_MORE",
+            "feedAsset": "buyout/4x5/v2-nejdriv-fakta-4x5.png",
+            "verticalAsset": "buyout/9x16/v2-nejdriv-fakta-9x16.png"
+          }
+        },
+        {
+          "name": "V3 | TRI-KROKY | STATIC",
+          "variant": "v3",
+          "status": "PAUSED",
+          "creative": {
+            "type": "STATIC",
+            "primaryText": "Pošlete základní informace, nemovitost individuálně posoudíme a vysvětlíme další možný postup.",
+            "headline": "Odeslat základní údaje",
+            "cta": "CONTACT_US",
+            "feedAsset": "buyout/4x5/v3-tri-jasne-kroky-4x5.png",
+            "verticalAsset": "buyout/9x16/v3-tri-jasne-kroky-9x16.png"
+          }
+        },
+        {
+          "name": "V4 | POROVNANI-CEST | STATIC",
+          "variant": "v4",
+          "status": "PAUSED",
+          "creative": {
+            "type": "STATIC",
+            "primaryText": "Běžný prodej a přímý výkup jsou dvě různé cesty. Pomůžeme vám porovnat možnosti podle konkrétní nemovitosti a cíle.",
+            "headline": "Porovnat možnosti prodeje",
+            "cta": "LEARN_MORE",
+            "feedAsset": "buyout/4x5/v4-bezny-prodej-nebo-vykup-4x5.png",
+            "verticalAsset": "buyout/9x16/v4-bezny-prodej-nebo-vykup-9x16.png"
+          }
+        },
+        {
+          "name": "V5 | PRED-REKONSTRUKCI | STATIC",
+          "variant": "v5",
+          "status": "PAUSED",
+          "creative": {
+            "type": "STATIC",
+            "primaryText": "Horší technický stav nemusí být důvodem první kontakt odkládat. Pošlete dostupné informace a fotografie; možnosti posoudíme individuálně.",
+            "headline": "Poslat informace",
+            "cta": "CONTACT_US",
+            "feedAsset": "buyout/4x5/v5-nemovitost-pred-rekonstrukci-4x5.png",
+            "verticalAsset": "buyout/9x16/v5-nemovitost-pred-rekonstrukci-9x16.png"
+          }
+        },
+        {
+          "name": "VV1 | OKAMZITY-VYKUP | VIDEO-27S | CLAIM-GATE",
+          "variant": "v1",
+          "status": "PAUSED",
+          "requiresClaimApproval": true,
+          "creative": {
+            "type": "VIDEO",
+            "primaryText": "Zvažujete přímý výkup nemovitosti? Začněte lokalitou, stavem a dostupnými podklady. Možnost výkupu, nabídka i termín vždy závisejí na individuálním posouzení a smlouvě.",
+            "headline": "Požádat o posouzení",
+            "cta": "LEARN_MORE",
+            "videoAsset": "CEFIP-okamzity-vykup-za-hotove-27s-1080x1920.mp4"
+          }
+        }
       ]
     }
   ]

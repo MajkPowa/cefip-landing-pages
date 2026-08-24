@@ -39,3 +39,5 @@ next-env.d.ts
 /outputs/
 /work/
 *.tsbuildinfo
+meta-campaigns/.meta-ads-checkpoint*.json
+meta-campaigns/*.checkpoint.json
