@@ -12,6 +12,7 @@ import {
   main,
   parseArgs,
   REQUIRED_META_PERMISSIONS,
+  resolveBusinessAdAccountRelationship,
   validatePlan,
 } from "../deploy-meta-ads.mjs";
 
@@ -112,6 +113,46 @@ test("Marketing API preflight uses ad/page scopes and not Instagram Graph scope"
     "pages_manage_ads",
   ]);
   assert.equal(REQUIRED_META_PERMISSIONS.includes("instagram_basic"), false);
+});
+
+test("business relationship accepts ownership and partner/client access, but not an unrelated account", () => {
+  const common = {
+    account: { id: "act_2596685627375368", currency: "CZK", account_status: 1, business: { id: "9999999999999999" } },
+    adAccountId: "2596685627375368",
+    businessId: "1754407605947820",
+  };
+  const client = resolveBusinessAdAccountRelationship({
+    ...common,
+    ownedAccounts: [],
+    clientAccounts: [{ id: "2596685627375368", currency: "CZK", account_status: 1 }],
+  });
+  assert.deepEqual(client, {
+    relationship: "CLIENT",
+    portfolioBusinessId: "1754407605947820",
+    ownerBusinessId: "9999999999999999",
+  });
+
+  const owned = resolveBusinessAdAccountRelationship({
+    ...common,
+    account: { ...common.account, business: { id: "1754407605947820" } },
+    ownedAccounts: [{ id: "act_2596685627375368", currency: "CZK", account_status: 1 }],
+    clientAccounts: [],
+  });
+  assert.equal(owned.relationship, "OWNED");
+
+  assert.throws(
+    () => resolveBusinessAdAccountRelationship({ ...common, ownedAccounts: [], clientAccounts: [] }),
+    /ani v owned_ad_accounts, ani v client_ad_accounts/,
+  );
+  assert.throws(
+    () => resolveBusinessAdAccountRelationship({
+      ...common,
+      account: { ...common.account, business: { id: "1754407605947820" } },
+      ownedAccounts: [{ id: "2596685627375368" }],
+      clientAccounts: [{ id: "act_2596685627375368" }],
+    }),
+    /nejednoznačná/,
+  );
 });
 
 test("validation rejects any attempt to activate an entity", async () => {

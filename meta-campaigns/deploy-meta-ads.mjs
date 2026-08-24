@@ -433,6 +433,42 @@ function normalizePlace(value) {
   return String(value).normalize("NFD").replace(/\p{Diacritic}/gu, "").toLocaleLowerCase("cs-CZ").trim();
 }
 
+function normalizeAdAccountId(value) {
+  return String(value ?? "").replace(/^act_/, "");
+}
+
+/**
+ * AdAccount.business is the owner, not every portfolio with partner/client access.
+ * Accept the expected portfolio only when the account appears on exactly one of
+ * its official Business edges. Merely being able to GET the account is not enough.
+ */
+export function resolveBusinessAdAccountRelationship({ account, adAccountId, businessId, ownedAccounts, clientAccounts }) {
+  const expectedAccountId = normalizeAdAccountId(adAccountId);
+  const ownedMatches = ownedAccounts.filter((row) => normalizeAdAccountId(row.id) === expectedAccountId);
+  const clientMatches = clientAccounts.filter((row) => normalizeAdAccountId(row.id) === expectedAccountId);
+  if (ownedMatches.length > 1 || clientMatches.length > 1 || (ownedMatches.length && clientMatches.length)) {
+    throw new Error(`Vazba reklamního účtu ${expectedAccountId} na business ${businessId} je nejednoznačná.`);
+  }
+  if (!ownedMatches.length && !clientMatches.length) {
+    throw new Error(`Business portfolio ${businessId} nemá reklamní účet ${expectedAccountId} ani v owned_ad_accounts, ani v client_ad_accounts.`);
+  }
+
+  const relationship = ownedMatches.length ? "OWNED" : "CLIENT";
+  const edgeAccount = ownedMatches[0] ?? clientMatches[0];
+  const ownerBusinessId = String(account.business?.id ?? edgeAccount.business?.id ?? "");
+  if (relationship === "OWNED" && ownerBusinessId && ownerBusinessId !== String(businessId)) {
+    throw new Error(`Účet je na owned_ad_accounts businessu ${businessId}, ale AdAccount.business uvádí vlastníka ${ownerBusinessId}.`);
+  }
+  if (normalizeAdAccountId(account.id) !== expectedAccountId) throw new Error("Preflight vrátil jiný reklamní účet.");
+  if (edgeAccount.currency && account.currency && edgeAccount.currency !== account.currency) {
+    throw new Error("Měna reklamního účtu se mezi AdAccount a Business edge neshoduje.");
+  }
+  if (edgeAccount.account_status != null && account.account_status != null && Number(edgeAccount.account_status) !== Number(account.account_status)) {
+    throw new Error("Stav reklamního účtu se mezi AdAccount a Business edge neshoduje.");
+  }
+  return { relationship, portfolioBusinessId: String(businessId), ownerBusinessId: ownerBusinessId || undefined };
+}
+
 async function resolveGeoLocations(client, cityNames) {
   const resolved = [];
   for (const cityName of cityNames) {
@@ -462,12 +498,20 @@ async function preflight(client, plan) {
     throw new Error(`Token nemá všechna oprávnění potřebná pro bezpečný preflight a tvorbu reklam: ${missingPermissions.join(", ")}.`);
   }
 
-  const account = await client.get(accountId, { fields: "id,name,currency,account_status,disable_reason,business{id,name}" });
-  const returnedAccountId = String(account.id ?? "").replace(/^act_/, "");
-  if (returnedAccountId !== plan.meta.adAccountId) throw new Error("Preflight vrátil jiný reklamní účet.");
-  if (String(account.business?.id ?? "") !== plan.meta.businessId) {
-    throw new Error(`Reklamní účet není připojen k očekávanému business portfoliu ${plan.meta.businessId}.`);
-  }
+  const business = await client.get(plan.meta.businessId, { fields: "id,name,verification_status" });
+  if (String(business.id ?? "") !== plan.meta.businessId) throw new Error("Preflight vrátil jiné business portfolio.");
+
+  const accountFields = "id,name,currency,account_status,disable_reason,business{id,name}";
+  const account = await client.get(accountId, { fields: accountFields });
+  const ownedAccounts = await client.listAll(`${plan.meta.businessId}/owned_ad_accounts`, { fields: accountFields });
+  const clientAccounts = await client.listAll(`${plan.meta.businessId}/client_ad_accounts`, { fields: accountFields });
+  const businessRelationship = resolveBusinessAdAccountRelationship({
+    account,
+    adAccountId: plan.meta.adAccountId,
+    businessId: plan.meta.businessId,
+    ownedAccounts,
+    clientAccounts,
+  });
   if (account.currency !== "CZK") throw new Error(`Reklamní účet musí být veden v CZK; Meta hlásí ${account.currency ?? "neznámou měnu"}.`);
   if (Number(account.account_status) !== 1) throw new Error(`Reklamní účet není aktivní pro přípravu reklam (account_status=${account.account_status}).`);
 
@@ -490,7 +534,11 @@ async function preflight(client, plan) {
   }
 
   const resolvedCities = await resolveGeoLocations(client, plan.defaults.geoCities);
-  return { account: { id: account.id, name: account.name, currency: account.currency }, resolvedCities };
+  return {
+    business: { id: business.id, name: business.name, verificationStatus: business.verification_status },
+    account: { id: normalizeAdAccountId(account.id), name: account.name, currency: account.currency, ...businessRelationship },
+    resolvedCities,
+  };
 }
 
 function initialCheckpoint({ planSha256, graphVersion, plan, preflightResult }) {

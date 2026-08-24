@@ -39,6 +39,8 @@ Uživatel nebo system user musí mít odpovídající přístup k business portf
 
 Preflight navíc ověří účet, měnu CZK, business portfolio, dostupnost datasetu a oba Instagram actory přes oficiální Marketing API edge reklamního účtu `act_<id>/instagram_accounts` (v Business SDK `AdAccount.getInstagramAccounts()`). Samostatné oprávnění Instagram Graph API `instagram_basic` proto není potřeba. Pokud Instagram účet není propojený a přiřazený k reklamnímu účtu, skript skončí ještě před vytvořením kampaně.
 
+Pole `AdAccount.business` označuje vlastníka reklamního účtu, nikoli každé portfolio s partnerským přístupem. Skript proto současně vyžaduje, aby byl účet čitelný použitým tokenem a aby se přesně jednou objevil buď na `/{business-id}/owned_ad_accounts`, nebo na `/{business-id}/client_ad_accounts`. Vlastněný účet musí souhlasit také s `AdAccount.business`; klientský účet může mít jiného vlastníka. Chybějící, duplicitní nebo rozporná vazba zastaví běh před jakýmkoli zápisem.
+
 ## Výslovné vytvoření PAUSED draftů
 
 Mutace se povolí pouze parametrem `--execute` a platným tokenem:
