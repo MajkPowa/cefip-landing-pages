@@ -1,4 +1,4 @@
-import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -60,6 +60,14 @@ function prepareHtml(source) {
 await rm(outputRoot, { recursive: true, force: true });
 await mkdir(outputRoot, { recursive: true });
 await cp(clientRoot, outputRoot, { recursive: true });
+
+const cssRoot = path.join(outputRoot, '_next', 'static', 'css');
+for (const file of await readdir(cssRoot)) {
+  if (!file.endsWith('.css')) continue;
+  const cssPath = path.join(cssRoot, file);
+  const css = await readFile(cssPath, 'utf8');
+  await writeFile(cssPath, css.replaceAll('url(/fonts/', `url(${basePath}/fonts/`), 'utf8');
+}
 
 for (const route of routes) {
   const response = await fetch(new URL(route.source, origin));
