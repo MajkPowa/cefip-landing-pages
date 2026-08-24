@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-24",
+  "mode": "PAUSED_DRAFT_ONLY",
+  "meta": {
+    "businessId": "1754407605947820",
+    "adAccountId": "2596685627375368",
+    "datasetId": "1511661883235296",
+    "officialAdsMcpUrl": "https://mcp.facebook.com/ads"
+  },
+  "defaults": {
+    "buyingType": "AUCTION",
+    "objective": "LEADS",
+    "specialAdCategory": "HOUSING",
+    "conversionLocation": "WEBSITE",
+    "optimizationEvent": "LEAD",
+    "bidStrategy": "HIGHEST_VOLUME",
+    "attribution": "7_DAY_CLICK_1_DAY_VIEW",
+    "placements": "ADVANTAGE_PLUS",
+    "proposedDailyBudgetCzk": 750,
+    "status": "PAUSED",
+    "geoCities": [
+      "Praha",
+      "Kladno",
+      "Mělník",
+      "Mladá Boleslav",
+      "Ústí nad Labem",
+      "Teplice",
+      "Liberec",
+      "Jablonec nad Nisou"
+    ],
+    "urlParameters": "utm_source=meta&utm_medium=paid_social&utm_campaign={{campaign.name}}&utm_term={{adset.name}}&utm_content={{ad.name}}&campaign_id={{campaign.id}}&adset_id={{adset.id}}&ad_id={{ad.id}}&placement={{placement}}"
+  },
+  "campaigns": [
+    {
+      "key": "stavebni",
+      "name": "CEFIP | STAVEBNI | LEADS-WEB | PRAHA-SEVER | 2026-09",
+      "adSetName": "PROSPECTING | HOUSING | BROAD | PRAHA-SEVER | AUTO",
+      "pageId": "977542792103554",
+      "instagramActorId": "17841480121342909",
+      "landingUrl": "https://cefip-landing-pages-2026.web.app/rekonstrukce/",
+      "ads": [
+        { "name": "R1 | TRANSFORMACE | STATIC", "variant": "r1", "status": "PAUSED" },
+        { "name": "R2 | PLAN | STATIC", "variant": "r2", "status": "PAUSED" },
+        { "name": "R3 | TYP-NEMOVITOSTI | STATIC", "variant": "r3", "status": "PAUSED" },
+        { "name": "R4 | JEDEN-PARTNER | STATIC", "variant": "r4", "status": "PAUSED" },
+        { "name": "R5 | LOW-FRICTION | STATIC", "variant": "r5", "status": "PAUSED" },
+        { "name": "RV1 | KOMPLETNI-REKONSTRUKCE | VIDEO-27S", "variant": "default", "status": "PAUSED" }
+      ]
+    },
+    {
+      "key": "realitni",
+      "name": "CEFIP | REALITNI | LEADS-WEB | PRAHA-SEVER | 2026-09",
+      "adSetName": "PROSPECTING | HOUSING | BROAD | PRAHA-SEVER | AUTO",
+      "pageId": "943869282146180",
+      "instagramActorId": "17841480162050971",
+      "landingUrl": "https://cefip-landing-pages-2026.web.app/vykup-nemovitosti/",
+      "ads": [
+        { "name": "V1 | OKAMZITY-VYKUP | STATIC | CLAIM-GATE", "variant": "v1", "status": "PAUSED", "requiresClaimApproval": true },
+        { "name": "V2 | FAKTA | STATIC", "variant": "v2", "status": "PAUSED" },
+        { "name": "V3 | TRI-KROKY | STATIC", "variant": "v3", "status": "PAUSED" },
+        { "name": "V4 | POROVNANI-CEST | STATIC", "variant": "v4", "status": "PAUSED" },
+        { "name": "V5 | PRED-REKONSTRUKCI | STATIC", "variant": "v5", "status": "PAUSED" },
+        { "name": "VV1 | OKAMZITY-VYKUP | VIDEO-27S | CLAIM-GATE", "variant": "v1", "status": "PAUSED", "requiresClaimApproval": true }
+      ]
+    }
+  ]
+}

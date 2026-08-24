@@ -18,6 +18,9 @@ declare global {
 
 const CONSENT_KEY = 'cefip-marketing-consent-v1';
 const STANDARD_EVENTS = new Set(['PageView', 'ViewContent', 'Lead', 'Contact']);
+// A Meta Pixel ID is public by design. Keep the production fallback in source so
+// Firebase's static export cannot silently ship without campaign measurement.
+const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID?.trim() || '1511661883235296';
 
 export function trackMeta(event: string, parameters: Record<string, unknown> = {}, eventId?: string) {
   if (typeof window === 'undefined' || !window.fbq) return;
@@ -61,8 +64,7 @@ export function AnalyticsConsent() {
     if (saved === 'accepted' || saved === 'rejected') {
       const frame = window.requestAnimationFrame(() => setChoice(saved));
       if (saved === 'accepted') {
-        const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
-        if (pixelId) enableMetaPixel(pixelId);
+        enableMetaPixel(META_PIXEL_ID);
       }
       return () => window.cancelAnimationFrame(frame);
     }
@@ -72,8 +74,7 @@ export function AnalyticsConsent() {
     window.localStorage.setItem(CONSENT_KEY, nextChoice);
     setChoice(nextChoice);
     if (nextChoice === 'accepted') {
-      const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
-      if (pixelId) enableMetaPixel(pixelId);
+      enableMetaPixel(META_PIXEL_ID);
     }
   };
 
