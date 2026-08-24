@@ -10,8 +10,7 @@ Nikdy nezapínat doručování ani útratu bez samostatného potvrzení rozpočt
 - Reklamní účet: `Cefip - 1` (`2596685627375368`)
 - Facebook stránka CEFIP Realitní: `943869282146180`
 - Facebook stránka CEFIP Stavební: `977542792103554`
-- Instagram CEFIP Realitní: `@cefiprealitni` (`17841480162050971`)
-- Instagram CEFIP Stavební: `@cefipstavebni` (`17841480121342909`)
+- Instagram identity nejsou dostupné přes autorizovaný reklamní účet ani přes obě Facebook stránky; do reklam se neposílá žádný `instagram_actor_id`
 - Dataset / Meta Pixel: `Cefip` (`1511661883235296`), přijímá události a je připojen k reklamnímu účtu
 - Oficiální Meta Ads MCP endpoint: `https://mcp.facebook.com/ads`
 - Oprávnění Meta Ads MCP u účtu `Cefip - 1`: 7/7 akcí povoleno
@@ -21,7 +20,7 @@ Nikdy nezapínat doručování ani útratu bez samostatného potvrzení rozpočt
 1. V Přehledu účtu doplnit platební metodu.
 2. Ověřit telefonní číslo reklamního účtu.
 3. Potvrdit výběr Facebook stránky pro první reklamu.
-4. Přihlásit oba instagramové účty v Business Settings. `@cefipstavebni` je propojen s Facebook stránkou CEFIP Stavební; `@cefiprealitni` zatím nemá připojenou žádnou položku ani přiřazené lidi.
+4. Kampaně připravit s bezpečným `PAGE_BACKED` fallbackem. Pokud bude později připojen Instagram účet, před změnou identity jej ověřit a schválit.
 5. Přidat a ověřit vlastní doménu. V Business Manageru nyní není žádná doména. Pro ostré kampaně je vhodné napojit například `kampane.cefip.cz` na Firebase Hosting a ověřit `cefip.cz`; cizí doménu `web.app` nelze vlastnit ani ověřit za CEFIP.
 6. Odpovědná osoba CEFIP musí před spuštěním potvrdit pravdivost claimů „okamžitý výkup“, „za hotové“ a případně „z vlastních prostředků“. Kupní cena je na landing page výslovně popsána jako bezhotovostní.
 7. Schválit text ochrany osobních údajů a 12měsíční retenční rámec.
@@ -58,7 +57,7 @@ Do vypnutých konceptů připravit `750 Kč / den / kampaň`. Aktivace a skuteč
 Název kampaně: `CEFIP | STAVEBNI | LEADS-WEB | PRAHA-SEVER | 2026-09`  
 Název sady: `PROSPECTING | HOUSING | BROAD | PRAHA-SEVER | AUTO`  
 Facebook identita: `CEFIP Stavební` (`977542792103554`)  
-Instagram identita: `@cefipstavebni` (`17841480121342909`) po dokončení přihlášení  
+Instagram umístění: page-backed identita z Facebook stránky; žádný `instagram_actor_id`
 Landing page: `https://cefip-landing-pages-2026.web.app/rekonstrukce/`
 
 URL parametry:
@@ -85,7 +84,7 @@ První test po schválení: zapnout pouze R1, R2, R5 a RV1. R3 a R4 ponechat jak
 Název kampaně: `CEFIP | REALITNI | LEADS-WEB | PRAHA-SEVER | 2026-09`  
 Název sady: `PROSPECTING | HOUSING | BROAD | PRAHA-SEVER | AUTO`  
 Facebook identita: `CEFIP Realitní` (`943869282146180`)  
-Instagram identita: `@cefiprealitni` (`17841480162050971`) až po přihlášení, přiřazení lidí a propojení s Facebook stránkou  
+Instagram umístění: page-backed identita z Facebook stránky; žádný `instagram_actor_id`
 Landing page: `https://cefip-landing-pages-2026.web.app/vykup-nemovitosti/`
 
 URL parametry jsou stejné jako u stavební kampaně.

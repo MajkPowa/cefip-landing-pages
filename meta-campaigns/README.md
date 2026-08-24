@@ -37,7 +37,9 @@ Preflight kontroluje přes `/me/permissions` tato udělená oprávnění:
 
 Uživatel nebo system user musí mít odpovídající přístup k business portfoliu `1754407605947820`, účtu `2596685627375368`, oběma stránkám, jejich Instagram účtům a datasetu. Aplikace může pro ostrý/system-user token potřebovat Advanced Access a ověření firmy. `leads_retrieval` není pro tvorbu těchto webových reklam potřeba a skript ho nepoužívá.
 
-Preflight navíc ověří účet, měnu CZK, business portfolio, dostupnost datasetu a oba Instagram actory přes oficiální Marketing API edge reklamního účtu `act_<id>/instagram_accounts` (v Business SDK `AdAccount.getInstagramAccounts()`). Samostatné oprávnění Instagram Graph API `instagram_basic` proto není potřeba. Pokud Instagram účet není propojený a přiřazený k reklamnímu účtu, skript skončí ještě před vytvořením kampaně.
+Preflight navíc ověří účet, měnu CZK, business portfolio a dostupnost datasetu. Obě kampaně jsou výslovně v režimu `PAGE_BACKED`: `object_story_spec` obsahuje pouze ověřené `page_id`, nikdy `instagram_actor_id`. Meta tak může pro zachovaná Advantage+ umístění použít svou page-backed Instagram identitu, aniž by skript předával nedostupný nebo neověřený Instagram účet. Samostatné oprávnění Instagram Graph API `instagram_basic` proto není potřeba.
+
+Tento fallback je fail-closed. Preflight vyžaduje na každé stránce úlohu `ADVERTISE`, nulové hodnoty `instagram_business_account` i `connected_instagram_account` a prázdný Marketing API edge `act_<id>/instagram_accounts`. Pokud se později objeví propojený Instagram účet, skript se zastaví před zápisem, aby jeho identitu musel člověk nejdříve ověřit a schválit v plánu.
 
 Pole `AdAccount.business` označuje vlastníka reklamního účtu, nikoli každé portfolio s partnerským přístupem. Skript proto současně vyžaduje, aby byl účet čitelný použitým tokenem a aby se přesně jednou objevil buď na `/{business-id}/owned_ad_accounts`, nebo na `/{business-id}/client_ad_accounts`. Vlastněný účet musí souhlasit také s `AdAccount.business`; klientský účet může mít jiného vlastníka. Chybějící, duplicitní nebo rozporná vazba zastaví běh před jakýmkoli zápisem.
 
@@ -60,7 +62,7 @@ Skript nejprve provede pouze čtecí preflight a vyřeší Meta geo klíče měs
 
 1. dvě `PAUSED` kampaně s campaign budgetem 750 Kč/den;
 2. jednu `PAUSED` webovou lead sadu v každé kampani;
-3. pro každou statiku oba obrazy a placement asset customization;
+3. pro každou statiku oba obrazy a placement asset customization, s identitou pouze přes `page_id`;
 4. obě videa, včetně čekání na jejich zpracování;
 5. kreativy s automatickými creative enhancements vypnutými;
 6. všech 12 reklam jako `PAUSED`.

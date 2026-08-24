@@ -13,6 +13,7 @@ import {
   parseArgs,
   REQUIRED_META_PERMISSIONS,
   resolveBusinessAdAccountRelationship,
+  validatePageBackedIdentityPreflight,
   validatePlan,
 } from "../deploy-meta-ads.mjs";
 
@@ -33,6 +34,8 @@ test("production plan validates all paused entities and local assets", async () 
   });
   assert.equal(assets.size, 22);
   assert.ok(plan.campaigns.every((campaign) => campaign.ads.every((ad) => ad.status === "PAUSED")));
+  assert.ok(plan.campaigns.every((campaign) => campaign.identityMode === "PAGE_BACKED"));
+  assert.ok(plan.campaigns.every((campaign) => !Object.hasOwn(campaign, "instagramActorId")));
 });
 
 test("payload builders hard-code housing, lead optimization, budget and paused status", async () => {
@@ -65,12 +68,14 @@ test("static creative uses both placement images; video creative uses uploaded v
   assert.deepEqual(staticPayload.asset_feed_spec.images.map((image) => image.hash), ["feedhash", "verticalhash"]);
   assert.equal(staticPayload.asset_feed_spec.asset_customization_rules.length, 2);
   assert.equal(staticPayload.object_story_spec.page_id, construction.pageId);
+  assert.deepEqual(Object.keys(staticPayload.object_story_spec), ["page_id"]);
   assert.match(staticPayload.asset_feed_spec.link_urls[0].website_url, /[?&]v=r1(?:&|$)/);
   assert.equal(staticPayload.degrees_of_freedom_spec.creative_features_spec.standard_enhancements.enroll_status, "OPT_OUT");
 
   const videoAd = construction.ads.at(-1);
   const videoPayload = buildVideoCreativePayload(plan, construction, videoAd, "98765432101", "https://example.test/thumbnail.jpg");
   assert.equal(videoPayload.object_story_spec.video_data.video_id, "98765432101");
+  assert.equal(Object.hasOwn(videoPayload.object_story_spec, "instagram_actor_id"), false);
   assert.equal(videoPayload.object_story_spec.video_data.image_url, "https://example.test/thumbnail.jpg");
   assert.equal(videoPayload.object_story_spec.video_data.call_to_action.type, "LEARN_MORE");
 });
@@ -155,9 +160,44 @@ test("business relationship accepts ownership and partner/client access, but not
   );
 });
 
+test("page-backed identity requires ADVERTISE and confirms that no Instagram actor is available or used", async () => {
+  const { plan } = await loadAndValidatePlan(PLAN_PATH);
+  const pages = plan.campaigns.map((campaign) => ({
+    id: campaign.pageId,
+    name: campaign.key,
+    tasks: ["ANALYZE", "ADVERTISE"],
+    instagram_business_account: null,
+    connected_instagram_account: null,
+  }));
+  const result = validatePageBackedIdentityPreflight({ campaigns: plan.campaigns, instagramAccounts: [], pages });
+  assert.equal(result.mode, "PAGE_BACKED");
+  assert.deepEqual(result.instagramActorIdsUsed, []);
+  assert.equal(result.pages.length, 2);
+
+  assert.throws(
+    () => validatePageBackedIdentityPreflight({ campaigns: plan.campaigns, instagramAccounts: [{ id: "123456789012345" }], pages }),
+    /nově zpřístupňuje Instagram účet/,
+  );
+  assert.throws(
+    () => validatePageBackedIdentityPreflight({ campaigns: plan.campaigns, instagramAccounts: [], pages: [{ ...pages[0], tasks: ["ANALYZE"] }, pages[1]] }),
+    /úlohu ADVERTISE/,
+  );
+  assert.throws(
+    () => validatePageBackedIdentityPreflight({ campaigns: plan.campaigns, instagramAccounts: [], pages: [{ ...pages[0], connected_instagram_account: { id: "123456789012345" } }, pages[1]] }),
+    /nově propojena s Instagram účtem/,
+  );
+});
+
 test("validation rejects any attempt to activate an entity", async () => {
   const { plan } = await loadAndValidatePlan(PLAN_PATH);
   const modified = structuredClone(plan);
   modified.campaigns[0].ads[0].status = "ACTIVE";
   await assert.rejects(validatePlan(modified, { planPath: PLAN_PATH, checkFiles: false }), /musí být PAUSED/);
+});
+
+test("validation rejects an unverified Instagram actor in page-backed mode", async () => {
+  const { plan } = await loadAndValidatePlan(PLAN_PATH);
+  const modified = structuredClone(plan);
+  modified.campaigns[0].instagramActorId = "17841480121342909";
+  await assert.rejects(validatePlan(modified, { planPath: PLAN_PATH, checkFiles: false }), /nesmí obsahovat neověřený instagramActorId/);
 });

@@ -16,9 +16,9 @@ const EXPECTED_ADS = 12;
 const PAUSED = "PAUSED";
 const GRAPH_ORIGIN = "https://graph.facebook.com";
 
-// Marketing API permissions used by this deployer. Instagram actors are checked
-// through AdAccount.getInstagramAccounts() (/act_<id>/instagram_accounts), so the
-// separate Instagram Graph API `instagram_basic` permission is not required.
+// Marketing API permissions used by this deployer. Creatives intentionally use
+// only their Facebook Page identity (Meta's page-backed Instagram fallback), so
+// the separate Instagram Graph API `instagram_basic` permission is not required.
 export const REQUIRED_META_PERMISSIONS = Object.freeze([
   "ads_management",
   "ads_read",
@@ -177,7 +177,8 @@ export async function validatePlan(plan, { planPath = DEFAULT_PLAN, checkFiles =
     entityNames.add(campaign.name);
     assert(isNonEmpty(campaign.adSetName), `Kampaň ${campaign.key} nemá adSetName.`, errors);
     assert(isNumericId(campaign.pageId), `Kampaň ${campaign.key} nemá platné pageId.`, errors);
-    assert(isNumericId(campaign.instagramActorId), `Kampaň ${campaign.key} nemá platné instagramActorId.`, errors);
+    assert(campaign.identityMode === "PAGE_BACKED", `Kampaň ${campaign.key} musí používat identityMode PAGE_BACKED.`, errors);
+    assert(!Object.hasOwn(campaign, "instagramActorId"), `Kampaň ${campaign.key} nesmí obsahovat neověřený instagramActorId.`, errors);
     try {
       const url = new URL(campaign.landingUrl);
       assert(url.protocol === "https:", `Landing URL kampaně ${campaign.key} musí používat HTTPS.`, errors);
@@ -389,7 +390,7 @@ function standardEnhancementsOptOut() {
 export function buildStaticCreativePayload(plan, campaign, ad, imageHashes) {
   return {
     name: `${ad.name} | CREATIVE`,
-    object_story_spec: { page_id: campaign.pageId, instagram_actor_id: campaign.instagramActorId },
+    object_story_spec: { page_id: campaign.pageId },
     asset_feed_spec: {
       ad_formats: ["SINGLE_IMAGE"],
       images: [
@@ -415,7 +416,6 @@ export function buildVideoCreativePayload(plan, campaign, ad, videoId, thumbnail
     name: `${ad.name} | CREATIVE`,
     object_story_spec: {
       page_id: campaign.pageId,
-      instagram_actor_id: campaign.instagramActorId,
       video_data: {
         video_id: videoId,
         image_url: thumbnailUrl,
@@ -467,6 +467,34 @@ export function resolveBusinessAdAccountRelationship({ account, adAccountId, bus
     throw new Error("Stav reklamního účtu se mezi AdAccount a Business edge neshoduje.");
   }
   return { relationship, portfolioBusinessId: String(businessId), ownerBusinessId: ownerBusinessId || undefined };
+}
+
+export function validatePageBackedIdentityPreflight({ campaigns, instagramAccounts, pages }) {
+  const invalidCampaign = campaigns.find((campaign) => campaign.identityMode !== "PAGE_BACKED" || Object.hasOwn(campaign, "instagramActorId"));
+  if (invalidCampaign) {
+    throw new Error(`Kampaň ${invalidCampaign.key} není bezpečně nakonfigurována pro PAGE_BACKED identitu bez instagramActorId.`);
+  }
+  if (instagramAccounts.length) {
+    const ids = instagramAccounts.map((account) => account.id).filter(Boolean).join(", ");
+    throw new Error(`Reklamní účet nově zpřístupňuje Instagram účet (${ids || "ID neuvedeno"}). PAGE_BACKED fallback se zastavil, aby nebyla bez schválení použita jiná identita.`);
+  }
+
+  const pagesById = new Map(pages.map((page) => [String(page.id), page]));
+  const checkedPages = [];
+  for (const campaign of campaigns) {
+    const page = pagesById.get(campaign.pageId);
+    if (!page) throw new Error(`Facebook stránka ${campaign.pageId} není dostupná.`);
+    const tasks = Array.isArray(page.tasks) ? page.tasks.map((task) => String(task).toUpperCase()) : [];
+    if (!tasks.includes("ADVERTISE")) {
+      throw new Error(`Token nemá na Facebook stránce ${campaign.pageId} úlohu ADVERTISE.`);
+    }
+    const connectedIds = [page.instagram_business_account?.id, page.connected_instagram_account?.id].filter(Boolean).map(String);
+    if (connectedIds.length) {
+      throw new Error(`Facebook stránka ${campaign.pageId} je nově propojena s Instagram účtem ${connectedIds.join(", ")}. PAGE_BACKED fallback vyžaduje nové schválení identity.`);
+    }
+    checkedPages.push({ pageId: campaign.pageId, name: page.name, tasks: ["ADVERTISE"], instagramConnected: false });
+  }
+  return { mode: "PAGE_BACKED", instagramActorIdsUsed: [], pages: checkedPages };
 }
 
 async function resolveGeoLocations(client, cityNames) {
@@ -521,22 +549,19 @@ async function preflight(client, plan) {
   }
 
   const instagramAccounts = await client.listAll(`${accountId}/instagram_accounts`, { fields: "id,username" });
-  const availableInstagramIds = new Set(instagramAccounts.map((instagram) => String(instagram.id)));
-  const expectedInstagramIds = [...new Set(plan.campaigns.map((campaign) => campaign.instagramActorId))];
-  const missingInstagramIds = expectedInstagramIds.filter((instagramId) => !availableInstagramIds.has(instagramId));
-  if (missingInstagramIds.length) {
-    throw new Error(`Reklamní účet nemá přes /instagram_accounts dostupné očekávané Instagram actory: ${missingInstagramIds.join(", ")}. Dokončete jejich propojení a přiřazení k reklamnímu účtu.`);
-  }
-
+  const pages = [];
   for (const campaign of plan.campaigns) {
-    const page = await client.get(campaign.pageId, { fields: "id,name" });
-    if (String(page.id) !== campaign.pageId) throw new Error(`Facebook stránka ${campaign.pageId} není dostupná.`);
+    pages.push(await client.get(campaign.pageId, {
+      fields: "id,name,tasks,instagram_business_account{id},connected_instagram_account{id}",
+    }));
   }
+  const identity = validatePageBackedIdentityPreflight({ campaigns: plan.campaigns, instagramAccounts, pages });
 
   const resolvedCities = await resolveGeoLocations(client, plan.defaults.geoCities);
   return {
     business: { id: business.id, name: business.name, verificationStatus: business.verification_status },
     account: { id: normalizeAdAccountId(account.id), name: account.name, currency: account.currency, ...businessRelationship },
+    identity,
     resolvedCities,
   };
 }

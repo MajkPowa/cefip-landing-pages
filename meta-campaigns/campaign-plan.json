@@ -42,7 +42,7 @@
       "name": "CEFIP | STAVEBNI | LEADS-WEB | PRAHA-SEVER | 2026-09",
       "adSetName": "PROSPECTING | HOUSING | BROAD | PRAHA-SEVER | AUTO",
       "pageId": "977542792103554",
-      "instagramActorId": "17841480121342909",
+      "identityMode": "PAGE_BACKED",
       "landingUrl": "https://cefip-landing-pages-2026.web.app/rekonstrukce/",
       "ads": [
         {
@@ -129,7 +129,7 @@
       "name": "CEFIP | REALITNI | LEADS-WEB | PRAHA-SEVER | 2026-09",
       "adSetName": "PROSPECTING | HOUSING | BROAD | PRAHA-SEVER | AUTO",
       "pageId": "943869282146180",
-      "instagramActorId": "17841480162050971",
+      "identityMode": "PAGE_BACKED",
       "landingUrl": "https://cefip-landing-pages-2026.web.app/vykup-nemovitosti/",
       "ads": [
         {
