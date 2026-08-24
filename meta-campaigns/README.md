@@ -60,6 +60,10 @@ Set-Clipboard -Value $null
 
 Skript nejprve provede pouze čtecí preflight a vyřeší Meta geo klíče měst. Teprve po úspěchu začne vytvářet:
 
+Pro kategorii `HOUSING` používá každý městský bod povinný rádius 17 km (`distance_unit=kilometer`), což je minimum vyžadované Meta validací speciální kategorie.
+
+Evropské DSA údaje jsou uvedené na úrovni sady podle právnických osob zveřejněných na landing pages: `CEFIP s.r.o.` pro rekonstrukce a `CEFIP REALITY s.r.o.` pro reality. Obě jsou nastavené zároveň jako beneficiary i payor a před případnou aktivací je vhodné potvrdit, že odpovídají skutečnému plátci.
+
 1. dvě `PAUSED` kampaně s campaign budgetem 750 Kč/den;
 2. jednu `PAUSED` webovou lead sadu v každé kampani;
 3. pro každou statiku oba obrazy a placement asset customization, s identitou pouze přes `page_id`;

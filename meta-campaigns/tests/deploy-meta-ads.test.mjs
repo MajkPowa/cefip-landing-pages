@@ -54,7 +54,10 @@ test("payload builders hard-code housing, lead optimization, budget and paused s
   assert.equal(adSet.destination_type, "WEBSITE");
   assert.equal(adSet.optimization_goal, "OFFSITE_CONVERSIONS");
   assert.deepEqual(adSet.promoted_object, { pixel_id: plan.meta.datasetId, custom_event_type: "LEAD" });
+  assert.equal(adSet.dsa_beneficiary, "CEFIP s.r.o.");
+  assert.equal(adSet.dsa_payor, "CEFIP s.r.o.");
   assert.equal(adSet.targeting.geo_locations.cities.length, 8);
+  assert.equal(adSet.targeting.geo_locations.cities.every((city) => city.radius === 17 && city.distance_unit === "kilometer"), true);
   assert.equal(adSet.targeting.age_min, 18);
   assert.equal("bid_strategy" in adSet, false);
   assert.equal("genders" in adSet.targeting, false);
@@ -71,7 +74,7 @@ test("static creative uses both placement images; video creative uses uploaded v
   assert.equal(staticPayload.object_story_spec.page_id, construction.pageId);
   assert.deepEqual(Object.keys(staticPayload.object_story_spec), ["page_id"]);
   assert.match(staticPayload.asset_feed_spec.link_urls[0].website_url, /[?&]v=r1(?:&|$)/);
-  assert.equal(staticPayload.degrees_of_freedom_spec.creative_features_spec.standard_enhancements.enroll_status, "OPT_OUT");
+  assert.equal(Object.hasOwn(staticPayload, "degrees_of_freedom_spec"), false);
 
   const videoAd = construction.ads.at(-1);
   const videoPayload = buildVideoCreativePayload(plan, construction, videoAd, "98765432101", "https://example.test/thumbnail.jpg");

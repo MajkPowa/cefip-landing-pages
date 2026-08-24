@@ -43,6 +43,8 @@
       "adSetName": "PROSPECTING | HOUSING | BROAD | PRAHA-SEVER | AUTO",
       "pageId": "977542792103554",
       "identityMode": "PAGE_BACKED",
+      "dsaBeneficiary": "CEFIP s.r.o.",
+      "dsaPayor": "CEFIP s.r.o.",
       "landingUrl": "https://cefip-landing-pages-2026.web.app/rekonstrukce/",
       "ads": [
         {
@@ -130,6 +132,8 @@
       "adSetName": "PROSPECTING | HOUSING | BROAD | PRAHA-SEVER | AUTO",
       "pageId": "943869282146180",
       "identityMode": "PAGE_BACKED",
+      "dsaBeneficiary": "CEFIP REALITY s.r.o.",
+      "dsaPayor": "CEFIP REALITY s.r.o.",
       "landingUrl": "https://cefip-landing-pages-2026.web.app/vykup-nemovitosti/",
       "ads": [
         {

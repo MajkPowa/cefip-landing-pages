@@ -181,6 +181,8 @@ export async function validatePlan(plan, { planPath = DEFAULT_PLAN, checkFiles =
     assert(isNumericId(campaign.pageId), `Kampaň ${campaign.key} nemá platné pageId.`, errors);
     assert(campaign.identityMode === "PAGE_BACKED", `Kampaň ${campaign.key} musí používat identityMode PAGE_BACKED.`, errors);
     assert(!Object.hasOwn(campaign, "instagramActorId"), `Kampaň ${campaign.key} nesmí obsahovat neověřený instagramActorId.`, errors);
+    assert(isNonEmpty(campaign.dsaBeneficiary), `Kampaň ${campaign.key} nemá DSA beneficiary.`, errors);
+    assert(isNonEmpty(campaign.dsaPayor), `Kampaň ${campaign.key} nemá DSA payor.`, errors);
     try {
       const url = new URL(campaign.landingUrl);
       assert(url.protocol === "https:", `Landing URL kampaně ${campaign.key} musí používat HTTPS.`, errors);
@@ -246,12 +248,17 @@ function encodeGraphValue(value) {
 
 function safeGraphError(body, status, token) {
   const graphError = body?.error;
+  const blameFields = graphError?.error_data?.blame_field_specs;
   const parts = [
     `Meta Graph API vrátilo HTTP ${status}.`,
     graphError?.type ? `type=${graphError.type}` : "",
     Number.isInteger(graphError?.code) ? `code=${graphError.code}` : "",
     Number.isInteger(graphError?.error_subcode) ? `subcode=${graphError.error_subcode}` : "",
     graphError?.message ? graphError.message : "",
+    graphError?.error_user_title ? `title=${graphError.error_user_title}` : "",
+    graphError?.error_user_msg ? `user_msg=${graphError.error_user_msg}` : "",
+    Array.isArray(blameFields) && blameFields.length ? `fields=${JSON.stringify(blameFields)}` : "",
+    graphError?.error_data?.details ? `details=${graphError.error_data.details}` : "",
     graphError?.fbtrace_id ? `trace=${graphError.fbtrace_id}` : "",
   ].filter(Boolean);
   return parts.join(" ").replaceAll(token, "[REDACTED]");
@@ -361,10 +368,14 @@ export function buildAdSetPayload(plan, campaign, campaignId, resolvedCities) {
       { event_type: "CLICK_THROUGH", window_days: 7 },
       { event_type: "VIEW_THROUGH", window_days: 1 },
     ],
+    dsa_beneficiary: campaign.dsaBeneficiary,
+    dsa_payor: campaign.dsaPayor,
     targeting: {
       age_min: 18,
       geo_locations: {
-        cities: resolvedCities.map((city) => ({ key: city.key })),
+        // Meta requires at least a 17 km radius for city targeting in the
+        // HOUSING special-ad category (error subcode 2909035/2909052).
+        cities: resolvedCities.map((city) => ({ key: city.key, radius: 17, distance_unit: "kilometer" })),
         location_types: ["home"],
       },
     },
@@ -385,10 +396,6 @@ const VERTICAL_PLACEMENTS = {
   messenger_positions: ["story"],
 };
 
-function standardEnhancementsOptOut() {
-  return { creative_features_spec: { standard_enhancements: { enroll_status: "OPT_OUT" } } };
-}
-
 export function buildStaticCreativePayload(plan, campaign, ad, imageHashes) {
   return {
     name: `${ad.name} | CREATIVE`,
@@ -408,7 +415,6 @@ export function buildStaticCreativePayload(plan, campaign, ad, imageHashes) {
         { customization_spec: VERTICAL_PLACEMENTS, image_label: { name: "vertical-9x16" } },
       ],
     },
-    degrees_of_freedom_spec: standardEnhancementsOptOut(),
     url_tags: plan.defaults.urlParameters,
   };
 }
@@ -426,7 +432,6 @@ export function buildVideoCreativePayload(plan, campaign, ad, videoId, thumbnail
         call_to_action: { type: ad.creative.cta, value: { link: buildLandingUrl(campaign, ad) } },
       },
     },
-    degrees_of_freedom_spec: standardEnhancementsOptOut(),
     url_tags: plan.defaults.urlParameters,
   };
 }
@@ -812,7 +817,18 @@ async function deploy({ client, plan, assets, planSha256, graphVersion, checkpoi
         const { videoId, thumbnailUrl } = await uploadVideo(client, plan, campaign, ad, state, assets, checkpointPath, checkpoint, videoTimeoutMs, logger);
         creativeId = await createCreative(client, plan, campaign, ad, state, buildVideoCreativePayload(plan, campaign, ad, videoId, thumbnailUrl), checkpointPath, checkpoint, logger);
       }
-      await findOrCreateAd(client, plan, campaign, ad, state, creativeId, checkpointPath, checkpoint, logger);
+      if (!isNumericId(String(creativeId))) throw new Error(`Chybí creative ID pro ${ad.name}.`);
+    }
+  }
+
+  // Ad objects are intentionally created only after every campaign, ad set,
+  // upload and creative is checkpointed. If Meta blocks ad creation because an
+  // account prerequisite is missing (for example a payment method), the whole
+  // package remains prepared and can be resumed without duplicate uploads.
+  for (const campaign of plan.campaigns) {
+    const state = checkpoint.campaigns[campaign.key];
+    for (const ad of campaign.ads) {
+      await findOrCreateAd(client, plan, campaign, ad, state, state.creatives[ad.name], checkpointPath, checkpoint, logger);
     }
   }
 
