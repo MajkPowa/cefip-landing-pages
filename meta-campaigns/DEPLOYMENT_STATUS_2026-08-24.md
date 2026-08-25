@@ -45,7 +45,10 @@ Následné ověření narazilo na dočasný request limit účtu (code `17`, sub
 - Ads Manager potvrzuje `Zkontrolovat a zveřejnit (12)` a `Výsledky z 12 reklam`.
 - Všechny reklamy jsou pouze nezveřejněné koncepty; tlačítko `Zveřejnit` nebylo použito.
 - Každá statická reklama má vlastní výchozí kreativu 4:5 a vlastní vertikální kreativu 9:16.
-- Obě video reklamy mají odpovídající 27s video nastavené i pro Stories a Reels.
+- Obě video reklamy mají odpovídající 27s video nastavené ve výchozím umístění i pro Stories a Reels.
+- Finální video pro CEFIP Stavební: `CEFIP-rekonstrukce-reference-omni-natural-voice-27s.mp4`.
+- Finální video pro CEFIP Realitní: `CEFIP-vykup-reference-omni-natural-voice-27s.mp4`.
+- Starší exporty `CEFIP-kompletni-rekonstrukce-27s-1080x1920.mp4` a `CEFIP-okamzity-vykup-za-hotove-27s-1080x1920.mp4` s robotickým hlasem byly z konceptů 2026-08-25 odstraněny a nesmí se znovu přiřadit.
 - CEFIP Realitní používá Page-backed identitu `CEFIP Realitní`; CEFIP Stavební používá `CEFIP Stavební` a připojený profil `cefipstavebni`.
 - Landing URL, texty, titulky, CTA a UTM parametry jsou vyplněné. Popis zůstává úmyslně prázdný.
 - UI koncepty nejsou totéž co Graph API ad objekty, proto checkpoint nadále správně eviduje `ads: {}`.
